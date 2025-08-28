@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --inspect=9229",
+   "dev": "electron . --disable-gpu --use-gl=swiftshader --disable-accelerated-2d-canvas --ignore-gpu-blacklist --inspect=9229",
     "build": "electron-builder",
     "build:win": "electron-builder --win --x64",
     "build:mac": "electron-builder --mac",
