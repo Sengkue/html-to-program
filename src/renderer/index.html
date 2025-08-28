@@ -832,17 +832,83 @@
         
         // Load available languages on page load
         async function loadLanguages() {
+            console.log('Loading languages...');
             if (typeof window.translator !== 'undefined') {
                 try {
+                    console.log('Translator API available, fetching languages...');
                     const result = await window.translator.getAvailableLanguages();
+                    console.log('Languages result:', result);
                     if (result.success) {
                         availableLanguages = result.languages;
+                        console.log('Available languages loaded:', availableLanguages);
                         populateLanguageSelectors();
+                    } else {
+                        console.error('Failed to load languages:', result.error);
                     }
                 } catch (error) {
                     console.error('Error loading languages:', error);
+                    // Fallback: use basic language set
+                    loadFallbackLanguages();
                 }
+            } else {
+                console.warn('Translator API not available, using fallback languages');
+                // Fallback: use basic language set
+                loadFallbackLanguages();
             }
+        }
+        
+        // Fallback language loading if translator API is not available
+        function loadFallbackLanguages() {
+            availableLanguages = {
+                'english': 'en',
+                'spanish': 'es',
+                'french': 'fr',
+                'german': 'de',
+                'italian': 'it',
+                'portuguese': 'pt',
+                'russian': 'ru',
+                'japanese': 'ja',
+                'korean': 'ko',
+                'chinese': 'zh',
+                'arabic': 'ar',
+                'hindi': 'hi',
+                'thai': 'th',
+                'vietnamese': 'vi',
+                'lao': 'lo',
+                'laos': 'lo',
+                'hmong': 'hmn',
+                'khmer': 'km',
+                'cambodian': 'km',
+                'burmese': 'my',
+                'myanmar': 'my',
+                'tagalog': 'tl',
+                'filipino': 'tl',
+                'indonesian': 'id',
+                'malay': 'ms',
+                'dutch': 'nl',
+                'norwegian': 'no',
+                'polish': 'pl',
+                'swedish': 'sv',
+                'danish': 'da',
+                'finnish': 'fi',
+                'greek': 'el',
+                'hebrew': 'he',
+                'turkish': 'tr',
+                'czech': 'cs',
+                'hungarian': 'hu',
+                'romanian': 'ro',
+                'bulgarian': 'bg',
+                'croatian': 'hr',
+                'serbian': 'sr',
+                'slovenian': 'sl',
+                'slovak': 'sk',
+                'lithuanian': 'lt',
+                'latvian': 'lv',
+                'estonian': 'et',
+                'ukrainian': 'uk'
+            };
+            console.log('Fallback languages loaded:', availableLanguages);
+            populateLanguageSelectors();
         }
         
         function populateLanguageSelectors() {
