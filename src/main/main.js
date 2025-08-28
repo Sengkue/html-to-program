@@ -12,6 +12,15 @@ app.commandLine.appendSwitch('--disable-gpu');
 app.commandLine.appendSwitch('--disable-gpu-sandbox');
 app.commandLine.appendSwitch('--disable-software-rasterizer');
 app.commandLine.appendSwitch('--disable-features', 'VizDisplayCompositor');
+app.commandLine.appendSwitch('--disable-accelerated-2d-canvas');
+app.commandLine.appendSwitch('--disable-accelerated-jpeg-decoding');
+app.commandLine.appendSwitch('--disable-accelerated-mjpeg-decode');
+app.commandLine.appendSwitch('--disable-accelerated-video-decode');
+app.commandLine.appendSwitch('--use-gl', 'swiftshader');
+app.commandLine.appendSwitch('--ignore-gpu-blacklist');
+app.commandLine.appendSwitch('--disable-background-timer-throttling');
+app.commandLine.appendSwitch('--disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('--disable-renderer-backgrounding');
 
 // Initialize translator
 const translator = new Translator();
