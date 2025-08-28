@@ -733,16 +733,18 @@
                 this.updateStatus(statusSpan, 'Creating new file...');
                 
                 try {
-                    const response = await fetch(`${CONFIG.API_BASE}/trigger-minutely`, {
-                        method: 'POST'
-                    });
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        this.updateStatus(statusSpan, 'New file created successfully!');
-                        setTimeout(() => this.loadFiles(), 1000);
+                    if (typeof window.electronAPI !== 'undefined') {
+                        const result = await window.electronAPI.createNewFile();
+                        if (result && result.success) {
+                            this.updateStatus(statusSpan, 'New file created successfully!');
+                            setTimeout(() => this.loadFiles(), 1000);
+                        } else {
+                            this.updateStatus(statusSpan, 'Error creating file');
+                        }
                     } else {
-                        this.updateStatus(statusSpan, 'Error creating file');
+                        // Simulate file creation for demonstration
+                        this.updateStatus(statusSpan, 'File creation simulated - ElectronAPI not available');
+                        setTimeout(() => this.loadFiles(), 1000);
                     }
                 } catch (error) {
                     this.updateStatus(statusSpan, 'Error creating file');
@@ -754,16 +756,18 @@
                 const statusSpan = DOM.get('status');
                 
                 try {
-                    const response = await fetch(`${CONFIG.API_BASE}/status`);
-                    const data = await response.json();
-                    
-                    if (data.totalActive > 0) {
-                        this.updateStatus(statusSpan, `System running - ${data.totalActive} active tasks`);
+                    if (typeof window.electronAPI !== 'undefined') {
+                        const result = await window.electronAPI.getSystemStatus();
+                        if (result && result.totalActive > 0) {
+                            this.updateStatus(statusSpan, `System running - ${result.totalActive} active tasks`);
+                        } else {
+                            this.updateStatus(statusSpan, 'System idle - no active tasks');
+                        }
                     } else {
-                        this.updateStatus(statusSpan, 'System idle - no active tasks');
+                        this.updateStatus(statusSpan, 'Translation system ready - ElectronAPI not available');
                     }
                 } catch (error) {
-                    this.updateStatus(statusSpan, 'Cannot connect to system');
+                    this.updateStatus(statusSpan, 'System status unavailable');
                     console.error('System status error:', error);
                 }
             }
