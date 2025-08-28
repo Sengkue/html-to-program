@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // File operations
   refreshFiles: () => ipcRenderer.invoke('refresh-files'),
   createNewFile: () => ipcRenderer.invoke('create-new-file'),
+  openFolder: () => ipcRenderer.invoke('open-folder'),
   
   // System operations
   getSystemStatus: () => ipcRenderer.invoke('get-system-status'),
@@ -23,6 +24,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Listeners for main process events
   onRefreshFiles: (callback) => ipcRenderer.on('refresh-files', callback),
   onCreateNewFile: (callback) => ipcRenderer.on('create-new-file', callback),
+  onOpenFolder: (callback) => ipcRenderer.on('open-folder', callback),
+  onOpenSettings: (callback) => ipcRenderer.on('open-settings', callback),
   onWindowMaximized: (callback) => ipcRenderer.on('window-maximized', callback),
   onWindowUnmaximized: (callback) => ipcRenderer.on('window-unmaximized', callback),
   
@@ -35,29 +38,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Logging (for debugging)
   logToMain: (message) => ipcRenderer.invoke('log-message', message)
-});
-
-// Expose translation API
-contextBridge.exposeInMainWorld('translator', {
-  // Translate text
-  translateText: async (text, to, from = 'auto') => {
-    return await ipcRenderer.invoke('translate-text', { text, to, from });
-  },
-  
-  // Translate multiple texts
-  translateMultiple: async (texts, to, from = 'auto') => {
-    return await ipcRenderer.invoke('translate-multiple', { texts, to, from });
-  },
-  
-  // Detect language
-  detectLanguage: async (text) => {
-    return await ipcRenderer.invoke('detect-language', { text });
-  },
-  
-  // Get available languages
-  getAvailableLanguages: async () => {
-    return await ipcRenderer.invoke('get-available-languages');
-  }
 });
 
 // Expose a limited API for your specific app needs
@@ -80,6 +60,29 @@ contextBridge.exposeInMainWorld('happyFiles', {
       console.error('API call failed:', error);
       throw error;
     }
+  }
+});
+
+// Expose translation API
+contextBridge.exposeInMainWorld('translator', {
+  // Translate text
+  translateText: async (text, to, from = 'auto') => {
+    return await ipcRenderer.invoke('translate-text', { text, to, from });
+  },
+  
+  // Translate multiple texts
+  translateMultiple: async (texts, to, from = 'auto') => {
+    return await ipcRenderer.invoke('translate-multiple', { texts, to, from });
+  },
+  
+  // Detect language
+  detectLanguage: async (text) => {
+    return await ipcRenderer.invoke('detect-language', { text });
+  },
+  
+  // Get available languages
+  getAvailableLanguages: async () => {
+    return await ipcRenderer.invoke('get-available-languages');
   }
 });
 
