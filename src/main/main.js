@@ -4,6 +4,24 @@ const { createMenu } = require('./menu');
 const { createWindow } = require('./window');
 const Translator = require('../shared/translator');
 
+// ແກ້ໄຂບັນຫາ GPU process error
+app.disableHardwareAcceleration();
+
+// ເພີ່ມ command line switches ເພື່ອແກ້ບັນຫາ GPU
+app.commandLine.appendSwitch('--disable-gpu');
+app.commandLine.appendSwitch('--disable-gpu-sandbox');
+app.commandLine.appendSwitch('--disable-software-rasterizer');
+app.commandLine.appendSwitch('--disable-features', 'VizDisplayCompositor');
+app.commandLine.appendSwitch('--disable-accelerated-2d-canvas');
+app.commandLine.appendSwitch('--disable-accelerated-jpeg-decoding');
+app.commandLine.appendSwitch('--disable-accelerated-mjpeg-decode');
+app.commandLine.appendSwitch('--disable-accelerated-video-decode');
+app.commandLine.appendSwitch('--use-gl', 'swiftshader');
+app.commandLine.appendSwitch('--ignore-gpu-blacklist');
+app.commandLine.appendSwitch('--disable-background-timer-throttling');
+app.commandLine.appendSwitch('--disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('--disable-renderer-backgrounding');
+
 // Initialize translator
 const translator = new Translator();
 
@@ -75,20 +93,7 @@ app.on('web-contents-created', (event, contents) => {
   });
 });
 
-// Translation IPC handlers
-function setupTranslationHandlers() {
-  // Translate text
-  ipcMain.handle('translate-text', async (event, { text, to, from }) => {
-    try {
-      console.log(`Translating: "${text}" from ${from || 'auto'} to ${to}`);
-      const result = await translator.translateText(text, to, from);
-      return result;
-    } catch (error) {
-      console.error('Translation error in main process:', error);
-      return {
-        success: false,
-        error: error.message,
-        originalText: text
+
       };
     }
   });
@@ -143,6 +148,98 @@ function setupTranslationHandlers() {
   });
 
   console.log('Translation IPC handlers set up successfully');
+}
+
+// File management IPC handlers
+function setupFileHandlers() {
+  // Refresh files
+  ipcMain.handle('refresh-files', async () => {
+    try {
+      // Simulate file loading - replace with actual file system operations
+      const files = [
+        {
+          name: 'sample-file-1.txt',
+          created: new Date().toISOString(),
+          content: 'ນີ້ແມ່ນໄຟລ໌ຕົວຢ່າງ. ການແປພາສາເຮັດວຽກໄດ້ແລ້ວ!',
+          size: 256
+        },
+        {
+          name: 'sample-file-2.txt', 
+          created: new Date(Date.now() - 3600000).toISOString(),
+          content: 'ອີກໄຟລ໌ຕົວຢ່າງນຶ່ງທີ່ສະແດງການສະໜັບສະໜູນຫຼາຍພາສາ. ລອງໃຊ້ເຄື່ອງມືການແປຂ້າງເທິງ!',
+          size: 512
+        }
+      ];
+      
+      return {
+        success: true,
+        files: files
+      };
+    } catch (error) {
+      console.error('Refresh files error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  });
+
+  // Create new file
+  ipcMain.handle('create-new-file', async () => {
+    try {
+      console.log('Creating new file...');
+      // Simulate file creation
+      return {
+        success: true,
+        message: 'File created successfully'
+      };
+    } catch (error) {
+      console.error('Create file error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  });
+
+  // Get system status
+  ipcMain.handle('get-system-status', async () => {
+    try {
+      return {
+        success: true,
+        totalActive: 2,
+        status: 'Running'
+      };
+    } catch (error) {
+      console.error('System status error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  });
+
+  // Window controls
+  ipcMain.handle('window-minimize', async (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    window.minimize();
+  });
+
+  ipcMain.handle('window-maximize', async (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (window.isMaximized()) {
+      window.unmaximize();
+    } else {
+      window.maximize();
+    }
+  });
+
+  ipcMain.handle('window-close', async (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    window.close();
+  });
+
+  console.log('File management IPC handlers set up successfully');
 }
 
 // Handle app updates (if using electron-updater)
