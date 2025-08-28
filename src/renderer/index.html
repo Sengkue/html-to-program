@@ -856,28 +856,30 @@
         // Load available languages on page load
         async function loadLanguages() {
             console.log('Loading languages...');
-            if (typeof window.translator !== 'undefined') {
-                try {
+            try {
+                if (typeof window.translator !== 'undefined') {
                     console.log('Translator API available, fetching languages...');
                     const result = await window.translator.getAvailableLanguages();
                     console.log('Languages result:', result);
-                    if (result.success) {
+                    if (result && result.success && result.languages) {
                         availableLanguages = result.languages;
-                        console.log('Available languages loaded:', availableLanguages);
+                        console.log('Available languages loaded:', Object.keys(availableLanguages).length, 'languages');
                         populateLanguageSelectors();
+                        return true; // Success
                     } else {
-                        console.error('Failed to load languages:', result.error);
+                        console.error('Failed to load languages:', result ? result.error : 'No result');
                     }
-                } catch (error) {
-                    console.error('Error loading languages:', error);
-                    // Fallback: use basic language set
-                    loadFallbackLanguages();
+                } else {
+                    console.warn('Translator API not available');
                 }
-            } else {
-                console.warn('Translator API not available, using fallback languages');
-                // Fallback: use basic language set
-                loadFallbackLanguages();
+            } catch (error) {
+                console.error('Error loading languages:', error);
             }
+            
+            // If we get here, use fallback
+            console.log('Using fallback languages');
+            loadFallbackLanguages();
+            return false; // Used fallback
         }
         
         // Fallback language loading if translator API is not available
