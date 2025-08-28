@@ -9,12 +9,14 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     webPreferences: {
-  nodeIntegration: true,          // ເປີດໃຫ້ງ່າຍຂຶ້ນກ່ອນ
-  contextIsolation: false,        // ປິດກ່ອນ
-  enableRemoteModule: false,
-  preload: path.join(__dirname, 'preload.js'),
-  webSecurity: false              // ສຳລັບ development ເທົ່ານັ້ນ
-},
+      nodeIntegration: false,          // Security: Disable Node.js in renderer
+      contextIsolation: true,          // Security: Enable context isolation
+      enableRemoteModule: false,       // Security: Disable remote module
+      preload: path.join(__dirname, 'preload.js'), // Secure communication bridge
+      webSecurity: true,               // Security: Enable web security
+      allowRunningInsecureContent: false,
+      experimentalFeatures: false
+    },
     icon: getIconPath(),
     show: false,                       // Don't show until ready (prevents flash)
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
