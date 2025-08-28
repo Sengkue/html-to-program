@@ -4,6 +4,15 @@ const { createMenu } = require('./menu');
 const { createWindow } = require('./window');
 const Translator = require('../shared/translator');
 
+// ແກ້ໄຂບັນຫາ GPU process error
+app.disableHardwareAcceleration();
+
+// ເພີ່ມ command line switches ເພື່ອແກ້ບັນຫາ GPU
+app.commandLine.appendSwitch('--disable-gpu');
+app.commandLine.appendSwitch('--disable-gpu-sandbox');
+app.commandLine.appendSwitch('--disable-software-rasterizer');
+app.commandLine.appendSwitch('--disable-features', 'VizDisplayCompositor');
+
 // Initialize translator
 const translator = new Translator();
 
