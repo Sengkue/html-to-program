@@ -1092,8 +1092,39 @@
         
         // Load languages when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(loadLanguages, 1000); // Wait a bit for Electron to be ready
+            console.log('DOM loaded, starting language loading...');
+            // Try multiple times with increasing delays
+            attemptLanguageLoad(0);
         });
+        
+        function attemptLanguageLoad(attempt) {
+            const maxAttempts = 5;
+            const delays = [500, 1000, 2000, 3000, 5000];
+            
+            if (attempt >= maxAttempts) {
+                console.warn('Failed to load languages after', maxAttempts, 'attempts, using fallback');
+                loadFallbackLanguages();
+                return;
+            }
+            
+            console.log(`Language load attempt ${attempt + 1}/${maxAttempts}`);
+            
+            setTimeout(async () => {
+                try {
+                    await loadLanguages();
+                    // Check if languages were actually loaded
+                    if (Object.keys(availableLanguages).length > 0) {
+                        console.log('Languages loaded successfully on attempt', attempt + 1);
+                        return;
+                    }
+                } catch (error) {
+                    console.error(`Language load attempt ${attempt + 1} failed:`, error);
+                }
+                
+                // Try again if this attempt failed
+                attemptLanguageLoad(attempt + 1);
+            }, delays[attempt] || 5000);
+        }
         
         // Text-to-Speech functionality
         let currentSpeech = null;
