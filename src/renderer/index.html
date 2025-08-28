@@ -655,15 +655,34 @@
                 contentDiv.innerHTML = '<div class="loading">Loading your happy files...</div>';
                 
                 try {
-                    const response = await fetch(`${CONFIG.API_BASE}/happy-files`);
-                    const data = await response.json();
-                    
-                    if (data.success && data.files && data.files.length > 0) {
-                        this.displayFiles(data.files, contentDiv);
-                        this.updateStatus(statusSpan, `Loaded ${data.files.length} files`);
+                    // Use electron API instead of external HTTP API
+                    if (typeof window.electronAPI !== 'undefined') {
+                        const result = await window.electronAPI.refreshFiles();
+                        if (result && result.files && result.files.length > 0) {
+                            this.displayFiles(result.files, contentDiv);
+                            this.updateStatus(statusSpan, `Loaded ${result.files.length} files`);
+                        } else {
+                            contentDiv.innerHTML = '<div class="empty">No files found in the happy folder yet.</div>';
+                            this.updateStatus(statusSpan, 'No files found');
+                        }
                     } else {
-                        contentDiv.innerHTML = '<div class="empty">No files found in the happy folder yet.</div>';
-                        this.updateStatus(statusSpan, 'No files found');
+                        // Fallback: show placeholder content
+                        const placeholderFiles = [
+                            {
+                                name: 'sample-file-1.txt',
+                                created: new Date().toISOString(),
+                                content: 'This is a sample file. The translation feature is working!',
+                                size: 256
+                            },
+                            {
+                                name: 'sample-file-2.txt', 
+                                created: new Date(Date.now() - 3600000).toISOString(),
+                                content: 'Another sample file with multilingual support. Try the translation tools above!',
+                                size: 512
+                            }
+                        ];
+                        this.displayFiles(placeholderFiles, contentDiv);
+                        this.updateStatus(statusSpan, 'Showing sample files - File API not available');
                     }
                 } catch (error) {
                     this.handleError(error, contentDiv, statusSpan);
