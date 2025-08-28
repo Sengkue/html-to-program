@@ -94,7 +94,7 @@ app.on('web-contents-created', (event, contents) => {
 });
 
 
-      };
+function setupTranslationHandlers() {
     }
   });
 
