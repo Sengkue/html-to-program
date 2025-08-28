@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Files Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 
+                /* Lao fonts */
+                'Phetsarath OT', 'Saysettha OT', 'Lao UI', 'Noto Sans Lao',
+                /* Thai fonts */
+                'Leelawadee UI', 'Tahoma', 'Thonburi', 'Noto Sans Thai', 'Cordia New', 'Browallia New',
+                /* Khmer/Cambodian fonts */
+                'Khmer UI', 'Noto Sans Khmer', 'DaunPenh', 'Khmer OS', 'Khmer OS System',
+                /* Myanmar/Burmese fonts */
+                'Myanmar Text', 'Noto Sans Myanmar', 'Padauk', 'Myanmar3',
+                /* Chinese fonts */
+                'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Micro Hei', 'SimSun', 'SimHei',
+                /* Japanese fonts */
+                'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Source Han Sans JP', 'MS Gothic',
+                /* Korean fonts */
+                'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans CJK KR', 'Source Han Sans KR', 'Dotum', 'Gulim',
+                /* Arabic fonts */
+                'Segoe UI Historic', 'Tahoma', 'Arabic Typesetting', 'Noto Sans Arabic', 'Scheherazade New',
+                /* Hebrew fonts */
+                'Segoe UI Historic', 'David', 'Noto Sans Hebrew', 'Times New Roman',
+                /* Devanagari/Hindi fonts */
+                'Noto Sans Devanagari', 'Mangal', 'Kokila', 'Utsaahah', 'Aparajita',
+                /* Vietnamese fonts */
+                'Segoe UI', 'Tahoma', 'Times New Roman', 'Arial Unicode MS',
+                /* European fonts */
+                'Segoe UI', 'Roboto', 'Ubuntu', 'Cantarell', 'Helvetica Neue', 'Arial', 'sans-serif';
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .controls h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .status {
+            color: white;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .file-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .file-name {
+            font-weight: 700;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .file-date {
+            color: #666;
+            font-size: 0.9rem;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        .file-content {
+            color: #444;
+            line-height: 1.6;
+            font-size: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .file-size {
+            color: #888;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            margin: 50px 0;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4757;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .empty {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            margin: 50px 0;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .files-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Language select dropdown styling */
+        .language-select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.95);
+            color: #333 !important;
+            min-width: 140px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .language-select:hover {
+            background: rgba(255,255,255,1);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .language-select:focus {
+            outline: none;
+            background: rgba(255,255,255,1);
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .language-select option {
+            background: white;
+            color: #333;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .language-select option:hover {
+            background: #f0f0f0;
+        }
+
+        /* Lao and Asian language text support */
+        .lao-text, .asian-text {
+            font-family: 'Phetsarath OT', 'Saysettha OT', 'Lao UI', 'Noto Sans Lao', 'Khmer UI', 'Noto Sans Khmer', 'Microsoft Himalaya', sans-serif;
+            line-height: 1.8;
+            word-wrap: break-word;
+            word-break: break-word;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* Enhanced textarea for better Asian text input */
+        #textToTranslate {
+            font-family: 
+                /* Lao fonts */
+                'Phetsarath OT', 'Saysettha OT', 'Lao UI', 'Noto Sans Lao',
+                /* Thai fonts */
+                'Leelawadee UI', 'Tahoma', 'Thonburi', 'Noto Sans Thai', 'Cordia New', 'Browallia New',
+                /* Khmer/Cambodian fonts */
+                'Khmer UI', 'Noto Sans Khmer', 'DaunPenh', 'Khmer OS', 'Khmer OS System',
+                /* Myanmar/Burmese fonts */
+                'Myanmar Text', 'Noto Sans Myanmar', 'Padauk', 'Myanmar3',
+                /* Chinese fonts */
+                'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Micro Hei', 'SimSun', 'SimHei',
+                /* Japanese fonts */
+                'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Source Han Sans JP', 'MS Gothic',
+                /* Korean fonts */
+                'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans CJK KR', 'Source Han Sans KR', 'Dotum', 'Gulim',
+                /* Arabic fonts */
+                'Segoe UI Historic', 'Tahoma', 'Arabic Typesetting', 'Noto Sans Arabic', 'Scheherazade New',
+                /* Hebrew fonts */
+                'Segoe UI Historic', 'David', 'Noto Sans Hebrew', 'Times New Roman',
+                /* Devanagari/Hindi fonts */
+                'Noto Sans Devanagari', 'Mangal', 'Kokila', 'Utsaahah', 'Aparajita',
+                /* Vietnamese fonts */
+                'Segoe UI', 'Tahoma', 'Times New Roman', 'Arial Unicode MS',
+                /* European fonts */
+                'Segoe UI', 'Roboto', 'Ubuntu', 'Cantarell', 'Helvetica Neue', 'Arial', 'sans-serif' !important;
+            line-height: 1.6;
+        }
+
+        /* Enhanced translation result display */
+        #translationResult {
+            font-family: 
+                /* Lao fonts */
+                'Phetsarath OT', 'Saysettha OT', 'Lao UI', 'Noto Sans Lao',
+                /* Thai fonts */
+                'Leelawadee UI', 'Tahoma', 'Thonburi', 'Noto Sans Thai', 'Cordia New', 'Browallia New',
+                /* Khmer/Cambodian fonts */
+                'Khmer UI', 'Noto Sans Khmer', 'DaunPenh', 'Khmer OS', 'Khmer OS System',
+                /* Myanmar/Burmese fonts */
+                'Myanmar Text', 'Noto Sans Myanmar', 'Padauk', 'Myanmar3',
+                /* Chinese fonts */
+                'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Micro Hei', 'SimSun', 'SimHei',
+                /* Japanese fonts */
+                'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', 'Noto Sans CJK JP', 'Source Han Sans JP', 'MS Gothic',
+                /* Korean fonts */
+                'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans CJK KR', 'Source Han Sans KR', 'Dotum', 'Gulim',
+                /* Arabic fonts */
+                'Segoe UI Historic', 'Tahoma', 'Arabic Typesetting', 'Noto Sans Arabic', 'Scheherazade New',
+                /* Hebrew fonts */
+                'Segoe UI Historic', 'David', 'Noto Sans Hebrew', 'Times New Roman',
+                /* Devanagari/Hindi fonts */
+                'Noto Sans Devanagari', 'Mangal', 'Kokila', 'Utsaahah', 'Aparajita',
+                /* Vietnamese fonts */
+                'Segoe UI', 'Tahoma', 'Times New Roman', 'Arial Unicode MS',
+                /* European fonts */
+                'Segoe UI', 'Roboto', 'Ubuntu', 'Cantarell', 'Helvetica Neue', 'Arial', 'sans-serif';
+            line-height: 1.8;
+        }
+
+        /* Support for right-to-left languages if needed */
+        .rtl-text {
+            direction: rtl;
+            text-align: right;
+        }
+
+        /* Better rendering for complex scripts */
+        .complex-script {
+            -webkit-font-feature-settings: "liga" on, "calt" on;
+            font-feature-settings: "liga" on, "calt" on;
+            -webkit-text-size-adjust: none;
+            text-size-adjust: none;
+        }
+
+        /* Specific Thai text support */
+        .thai-text {
+            font-family: 'Leelawadee UI', 'Tahoma', 'Leelawadee', 'Thonburi', 'Noto Sans Thai', 'Cordia New', 'Browallia New', 'DokChampa', 'Angsana New', 'AngsanaUPC', sans-serif !important;
+            font-size: 16px !important;
+            line-height: 1.8 !important;
+            word-wrap: break-word;
+            word-break: break-word;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Force Unicode rendering for all text elements */
+        * {
+            unicode-bidi: normal;
+            text-transform: none;
+        }
+
+        /* Enhanced Thai display in all text areas */
+        textarea, input, div, span, p {
+            font-variant-ligatures: normal;
+            font-feature-settings: normal;
+            text-rendering: auto;
+        }
+
+        /* Advanced Voice Controls */
+        .voice-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .voice-button {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.8), rgba(56, 142, 60, 0.8));
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 14px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(15px);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+            height: 45px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .voice-button:hover {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 1), rgba(56, 142, 60, 1));
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .voice-button:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .voice-button.speaking {
+            background: linear-gradient(135deg, rgba(255, 87, 34, 0.9), rgba(230, 74, 25, 0.9));
+            animation: voicePulse 1.2s ease-in-out infinite;
+            box-shadow: 0 4px 20px rgba(255, 87, 34, 0.5);
+        }
+
+        .voice-button.paused {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.8), rgba(255, 152, 0, 0.8));
+            animation: none;
+        }
+
+        @keyframes voicePulse {
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 4px 20px rgba(255, 87, 34, 0.5);
+            }
+            50% { 
+                transform: scale(1.08);
+                box-shadow: 0 6px 25px rgba(255, 87, 34, 0.7);
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 4px 20px rgba(255, 87, 34, 0.5);
+            }
+        }
+
+        /* Voice Control Sliders */
+        .voice-slider {
+            width: 80px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .voice-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .voice-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: linear-gradient(135deg, #66BB6A, #4CAF50);
+        }
+
+        .voice-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        /* Stop button */
+        .stop-button {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.8), rgba(211, 47, 47, 0.8));
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(15px);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 35px;
+            height: 35px;
+        }
+
+        .stop-button:hover {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 1), rgba(211, 47, 47, 1));
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        /* Voice Control Panel */
+        .voice-control-panel {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-left: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+                max-width: 0;
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+                max-width: 400px;
+            }
+        }
+
+        .play-button, .pause-button {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.8), rgba(21, 101, 192, 0.8));
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 30px;
+            height: 30px;
+        }
+
+        .play-button:hover, .pause-button:hover {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 1), rgba(21, 101, 192, 1));
+            transform: scale(1.1);
+        }
+
+        /* Translation result with voice button */
+        .translation-with-voice {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .translation-text {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Happy Files Viewer</h1>
+        
+        <div class="controls">
+            <h3>File Management</h3>
+            <div class="button-group">
+                <button onclick="loadFiles()">Refresh Files</button>
+                <button onclick="triggerNewFile()">Create New File</button>
+                <button onclick="getSystemStatus()">System Status</button>
+                <span class="status" id="status">Ready</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h3>Translation Tools</h3>
+            <div class="translation-form">
+                <div class="input-group">
+                    <textarea id="textToTranslate" placeholder="Enter text to translate..." rows="4" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; resize: vertical; font-family: inherit;"></textarea>
+                </div>
+                <div class="form-row" style="display: flex; gap: 15px; margin: 15px 0; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="sourceLanguage" style="color: white; font-weight: 500;">From:</label>
+                        <select id="sourceLanguage" class="language-select">
+                            <option value="auto">Auto-detect</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="targetLanguage" style="color: white; font-weight: 500;">To:</label>
+                        <select id="targetLanguage" class="language-select">
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    <button onclick="translateText()" style="flex-shrink: 0;">Translate</button>
+                    <button onclick="detectLanguage()" style="flex-shrink: 0;">Detect Language</button>
+                </div>
+                <div id="translationResult" style="margin-top: 15px; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; min-height: 50px; border: 1px solid rgba(255,255,255,0.2); display: none;"></div>
+            </div>
+        </div>
+
+        <div id="content">
+            <div class="loading">Click "Refresh Files" to load your happy files...</div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            API_BASE: 'http://localhost:3000',
+            SPEECH_DEFAULTS: {
+                rate: 0.9,
+                pitch: 1.0,
+                volume: 0.8
+            },
+            SLIDER_CONFIG: {
+                speed: { min: 0.5, max: 2.0, step: 0.1, default: 0.9 },
+                volume: { min: 0, max: 1.0, step: 0.1, default: 0.8 }
+            }
+        };
+
+        // State management
+        const AppState = {
+            availableLanguages: {},
+            speech: {
+                current: null,
+                isPlaying: false,
+                isPaused: false,
+                activeId: null
+            }
+        };
+
+        // DOM utilities
+        const DOM = {
+            get: (id) => document.getElementById(id),
+            getAll: (selector) => document.querySelectorAll(selector),
+            create: (tag, className = '', content = '') => {
+                const element = document.createElement(tag);
+                if (className) element.className = className;
+                if (content) element.textContent = content;
+                return element;
+            },
+            show: (element) => element.style.display = 'block',
+            hide: (element) => element.style.display = 'none'
+        };
+
+        // File management module
+        const FileManager = {
+            async loadFiles() {
+                const contentDiv = DOM.get('content');
+                const statusSpan = DOM.get('status');
+                
+                this.updateStatus(statusSpan, 'Loading files...');
+                contentDiv.innerHTML = '<div class="loading">Loading your happy files...</div>';
+                
+                try {
+                    const response = await fetch(`${CONFIG.API_BASE}/happy-files`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.files && data.files.length > 0) {
+                        this.displayFiles(data.files, contentDiv);
+                        this.updateStatus(statusSpan, `Loaded ${data.files.length} files`);
+                    } else {
+                        contentDiv.innerHTML = '<div class="empty">No files found in the happy folder yet.</div>';
+                        this.updateStatus(statusSpan, 'No files found');
+                    }
+                } catch (error) {
+                    this.handleError(error, contentDiv, statusSpan);
+                }
+            },
+
+            displayFiles(files, container) {
+                const filesHTML = files.map(file => this.createFileCardHTML(file)).join('');
+                container.innerHTML = `<div class="files-grid">${filesHTML}</div>`;
+            },
+
+            createFileCardHTML(file) {
+                const createdDate = new Date(file.created).toLocaleString();
+                const fileSize = this.formatFileSize(file.size);
+                
+                return `
+                    <div class="file-card fade-in">
+                        <div class="file-header">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-date">${createdDate}</div>
+                        </div>
+                        <div class="file-content">${file.content}</div>
+                        <div class="file-size">${fileSize}</div>
+                    </div>
+                `;
+            },
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            },
+
+            updateStatus(statusElement, message) {
+                statusElement.textContent = message;
+            },
+
+            handleError(error, contentDiv, statusSpan) {
+                contentDiv.innerHTML = `<div class="error">Error loading files: ${error.message}</div>`;
+                this.updateStatus(statusSpan, 'Error loading files');
+                console.error('FileManager Error:', error);
+            },
+
+            async triggerNewFile() {
+                const statusSpan = DOM.get('status');
+                this.updateStatus(statusSpan, 'Creating new file...');
+                
+                try {
+                    const response = await fetch(`${CONFIG.API_BASE}/trigger-minutely`, {
+                        method: 'POST'
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.updateStatus(statusSpan, 'New file created successfully!');
+                        setTimeout(() => this.loadFiles(), 1000);
+                    } else {
+                        this.updateStatus(statusSpan, 'Error creating file');
+                    }
+                } catch (error) {
+                    this.updateStatus(statusSpan, 'Error creating file');
+                    console.error('Create file error:', error);
+                }
+            },
+
+            async getSystemStatus() {
+                const statusSpan = DOM.get('status');
+                
+                try {
+                    const response = await fetch(`${CONFIG.API_BASE}/status`);
+                    const data = await response.json();
+                    
+                    if (data.totalActive > 0) {
+                        this.updateStatus(statusSpan, `System running - ${data.totalActive} active tasks`);
+                    } else {
+                        this.updateStatus(statusSpan, 'System idle - no active tasks');
+                    }
+                } catch (error) {
+                    this.updateStatus(statusSpan, 'Cannot connect to system');
+                    console.error('System status error:', error);
+                }
+            }
+        };
+
+        // Legacy function wrappers for backward compatibility
+        const loadFiles = () => FileManager.loadFiles();
+        const triggerNewFile = () => FileManager.triggerNewFile();
+        const getSystemStatus = () => FileManager.getSystemStatus();
+        
+        function displayFiles(files) {
+            const contentDiv = document.getElementById('content');
+            
+            const filesHTML = files.map(file => {
+                const createdDate = new Date(file.created).toLocaleString();
+                const fileSize = formatFileSize(file.size);
+                
+                return `
+                    <div class="file-card fade-in">
+                        <div class="file-header">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-date">${createdDate}</div>
+                        </div>
+                        <div class="file-content">${file.content}</div>
+                        <div class="file-size">${fileSize}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            contentDiv.innerHTML = `<div class="files-grid">${filesHTML}</div>`;
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        async function triggerNewFile() {
+            const statusSpan = document.getElementById('status');
+            
+            statusSpan.textContent = 'Creating new file...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/trigger-minutely`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusSpan.textContent = 'New file created successfully!';
+                    // Auto-refresh files after creating
+                    setTimeout(loadFiles, 1000);
+                } else {
+                    statusSpan.textContent = 'Error creating file';
+                }
+            } catch (error) {
+                statusSpan.textContent = 'Error creating file';
+                console.error('Error:', error);
+            }
+        }
+        
+        async function getSystemStatus() {
+            const statusSpan = document.getElementById('status');
+            
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const data = await response.json();
+                
+                if (data.totalActive > 0) {
+                    statusSpan.textContent = `System running - ${data.totalActive} active tasks`;
+                } else {
+                    statusSpan.textContent = 'System idle - no active tasks';
+                }
+            } catch (error) {
+                statusSpan.textContent = 'Cannot connect to system';
+                console.error('Error:', error);
+            }
+        }
+        
+        // Translation functions
+        let availableLanguages = {};
+        
+        // Load available languages on page load
+        async function loadLanguages() {
+            if (typeof window.translator !== 'undefined') {
+                try {
+                    const result = await window.translator.getAvailableLanguages();
+                    if (result.success) {
+                        availableLanguages = result.languages;
+                        populateLanguageSelectors();
+                    }
+                } catch (error) {
+                    console.error('Error loading languages:', error);
+                }
+            }
+        }
+        
+        function populateLanguageSelectors() {
+            const sourceSelect = document.getElementById('sourceLanguage');
+            const targetSelect = document.getElementById('targetLanguage');
+            
+            // Clear existing options except the first ones
+            sourceSelect.innerHTML = '<option value="auto">Auto-detect</option>';
+            targetSelect.innerHTML = '<option value="en">English</option>';
+            
+            // Add languages to both selectors
+            Object.entries(availableLanguages).forEach(([name, code]) => {
+                if (code !== 'auto') {
+                    const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
+                    
+                    // Add to source language (skip auto since it's already there)
+                    const sourceOption = document.createElement('option');
+                    sourceOption.value = code;
+                    sourceOption.textContent = capitalizedName;
+                    sourceSelect.appendChild(sourceOption);
+                    
+                    // Add to target language
+                    const targetOption = document.createElement('option');
+                    targetOption.value = code;
+                    targetOption.textContent = capitalizedName;
+                    if (code !== 'en') { // Don't duplicate English
+                        targetSelect.appendChild(targetOption);
+                    }
+                }
+            });
+        }
+        
+        async function translateText() {
+            const textArea = document.getElementById('textToTranslate');
+            const sourceSelect = document.getElementById('sourceLanguage');
+            const targetSelect = document.getElementById('targetLanguage');
+            const resultDiv = document.getElementById('translationResult');
+            
+            const text = textArea.value.trim();
+            if (!text) {
+                alert('Please enter text to translate');
+                return;
+            }
+            
+            const fromLang = sourceSelect.value;
+            const toLang = targetSelect.value;
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div style="text-align: center;">Translating...</div>';
+            
+            try {
+                const result = await window.translator.translateText(text, toLang, fromLang);
+                
+                if (result.success) {
+                    const fromLangName = getLanguageName(result.sourceLanguage);
+                    const toLangName = getLanguageName(result.targetLanguage);
+                    
+                    // Detect if the result contains Thai text and apply Thai styling
+                    const isThaiText = /[\u0E00-\u0E7F]/.test(result.translatedText);
+                    const textClass = isThaiText ? 'thai-text' : '';
+                    
+                    const translationId = 'translation_' + Date.now();
+                    
+                    resultDiv.innerHTML = `
+                        <div style="margin-bottom: 10px; font-weight: 600; color: #e0e6ed;">Translation Result:</div>
+                        <div class="translation-with-voice">
+                            <div class="translation-text ${textClass}" style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; margin-bottom: 10px; line-height: 1.4;">${result.translatedText}</div>
+                            <div class="voice-controls">
+                                <button class="voice-button" id="voiceBtn_${translationId}" onclick="toggleVoiceControls('${translationId}')" title="Voice controls">
+                                    🔊
+                                </button>
+                                <div class="voice-control-panel" id="voicePanel_${translationId}" style="display: none;">
+                                    <button class="play-button" onclick="startSpeech('${result.translatedText.replace(/'/g, "\\'").replace(/"/g, '\\"')}', '${result.targetLanguage}', '${translationId}')" title="Play speech">
+                                        ▶️
+                                    </button>
+                                    <button class="pause-button" id="pauseBtn_${translationId}" onclick="pauseSpeech('${translationId}')" title="Pause speech" style="display: none;">
+                                        ⏸️
+                                    </button>
+                                    <div class="control-group">
+                                        <input type="range" min="0.5" max="2" step="0.1" value="0.9" class="voice-slider" id="speedSlider_${translationId}" title="Speed">
+                                        <div class="slider-label">Speed</div>
+                                    </div>
+                                    <div class="control-group">
+                                        <input type="range" min="0" max="1" step="0.1" value="0.8" class="voice-slider" id="volumeSlider_${translationId}" title="Volume">
+                                        <div class="slider-label">Volume</div>
+                                    </div>
+                                    <button class="stop-button" onclick="stopAllSpeech()" title="Stop all speech">
+                                        ⏹️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">Translated from ${fromLangName} to ${toLangName}</div>
+                    `;
+                    
+                    // Force Thai font rendering if Thai text detected
+                    if (isThaiText) {
+                        const translationTextElement = resultDiv.querySelector('.translation-text');
+                        if (translationTextElement) {
+                            translationTextElement.style.fontFamily = "'Leelawadee UI', 'Tahoma', 'Leelawadee', 'Thonburi', 'Noto Sans Thai', 'Cordia New', 'Browallia New', 'DokChampa', 'Angsana New', 'AngsanaUPC', sans-serif";
+                            translationTextElement.style.fontSize = '18px';
+                            translationTextElement.style.lineHeight = '1.8';
+                        }
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div style="color: #ff6b6b;">Translation failed: ${result.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="color: #ff6b6b;">Error: ${error.message}</div>`;
+                console.error('Translation error:', error);
+            }
+        }
+        
+        async function detectLanguage() {
+            const textArea = document.getElementById('textToTranslate');
+            const resultDiv = document.getElementById('translationResult');
+            
+            const text = textArea.value.trim();
+            if (!text) {
+                alert('Please enter text to detect language');
+                return;
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div style="text-align: center;">Detecting language...</div>';
+            
+            try {
+                const result = await window.translator.detectLanguage(text);
+                
+                if (result.success) {
+                    const langName = getLanguageName(result.detectedLanguage);
+                    resultDiv.innerHTML = `
+                        <div style="margin-bottom: 10px; font-weight: 600; color: #e0e6ed;">Language Detection Result:</div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; margin-bottom: 10px;">Detected language: <strong>${langName}</strong></div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">Language code: ${result.detectedLanguage}</div>
+                    `;
+                    
+                    // Auto-select the detected language in source dropdown
+                    const sourceSelect = document.getElementById('sourceLanguage');
+                    sourceSelect.value = result.detectedLanguage;
+                } else {
+                    resultDiv.innerHTML = `<div style="color: #ff6b6b;">Language detection failed: ${result.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="color: #ff6b6b;">Error: ${error.message}</div>`;
+                console.error('Language detection error:', error);
+            }
+        }
+        
+        function getLanguageName(code) {
+            for (const [name, langCode] of Object.entries(availableLanguages)) {
+                if (langCode === code) {
+                    return name.charAt(0).toUpperCase() + name.slice(1);
+                }
+            }
+            return code; // Return code if name not found
+        }
+        
+        // Load languages when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(loadLanguages, 1000); // Wait a bit for Electron to be ready
+        });
+        
+        // Text-to-Speech functionality
+        let currentSpeech = null;
+        let isSpeaking = false;
+        let isPaused = false;
+        let activeSpeechId = null;
+        
+        // Language code to voice language mapping
+        const voiceLanguageMap = {
+            'en': 'en-US',
+            'es': 'es-ES',
+            'fr': 'fr-FR',
+            'de': 'de-DE',
+            'it': 'it-IT',
+            'pt': 'pt-PT',
+            'ru': 'ru-RU',
+            'ja': 'ja-JP',
+            'ko': 'ko-KR',
+            'zh': 'zh-CN',
+            'ar': 'ar-SA',
+            'hi': 'hi-IN',
+            'th': 'th-TH',
+            'vi': 'vi-VN',
+            'lo': 'en-US', // Fallback to English for Lao
+            'hmn': 'en-US', // Fallback to English for Hmong
+            'km': 'en-US', // Fallback to English for Khmer
+            'my': 'en-US', // Fallback to English for Burmese
+            'tl': 'en-US', // Fallback to English for Tagalog
+            'id': 'en-US', // Fallback to English for Indonesian
+            'ms': 'en-US', // Fallback to English for Malay
+            'nl': 'nl-NL',
+            'no': 'no-NO',
+            'pl': 'pl-PL',
+            'sv': 'sv-SE',
+            'da': 'da-DK',
+            'fi': 'fi-FI',
+            'el': 'el-GR',
+            'he': 'he-IL',
+            'tr': 'tr-TR',
+            'cs': 'cs-CZ',
+            'hu': 'hu-HU',
+            'ro': 'ro-RO',
+            'bg': 'bg-BG',
+            'hr': 'hr-HR',
+            'sr': 'sr-RS',
+            'sl': 'sl-SI',
+            'sk': 'sk-SK',
+            'lt': 'lt-LT',
+            'lv': 'lv-LV',
+            'et': 'et-EE',
+            'uk': 'uk-UA'
+        };
+        
+        // Advanced Toggle Speech Function with speed and volume controls
+        function toggleSpeech(text, languageCode, translationId) {
+            if (!text || text.trim() === '') {
+                alert('No text to speak');
+                return;
+            }
+            
+            // Check if speech synthesis is supported
+            if (!('speechSynthesis' in window)) {
+                alert('Text-to-speech is not supported in your browser');
+                return;
+            }
+            
+            const button = document.getElementById(`voiceBtn_${translationId}`);
+            const speedSlider = document.getElementById(`speedSlider_${translationId}`);
+            const volumeSlider = document.getElementById(`volumeSlider_${translationId}`);
+            
+            // If speech is currently playing and it's the same translation
+            if (isSpeaking && activeSpeechId === translationId) {
+                if (speechSynthesis.paused) {
+                    // Resume speech
+                    speechSynthesis.resume();
+                    isPaused = false;
+                    button.classList.remove('paused');
+                    button.classList.add('speaking');
+                    button.innerHTML = '⏸️';
+                    console.log('Speech resumed');
+                } else {
+                    // Pause speech
+                    speechSynthesis.pause();
+                    isPaused = true;
+                    button.classList.remove('speaking');
+                    button.classList.add('paused');
+                    button.innerHTML = '▶️';
+                    console.log('Speech paused');
+                }
+                return;
+            }
+            
+            // Stop any current speech if playing a different translation
+            if (currentSpeech) {
+                speechSynthesis.cancel();
+                resetAllSpeakingButtons();
+            }
+            
+            // Create new speech utterance
+            currentSpeech = new SpeechSynthesisUtterance(text);
+            activeSpeechId = translationId;
+            
+            // Set language
+            const voiceLang = voiceLanguageMap[languageCode] || 'en-US';
+            currentSpeech.lang = voiceLang;
+            
+            // Get values from sliders
+            const speed = speedSlider ? parseFloat(speedSlider.value) : 0.9;
+            const volume = volumeSlider ? parseFloat(volumeSlider.value) : 0.8;
+            
+            // Set voice properties from sliders
+            currentSpeech.rate = speed;
+            currentSpeech.pitch = 1.0;
+            currentSpeech.volume = volume;
+            
+            // Try to find a specific voice for the language
+            const voices = speechSynthesis.getVoices();
+            const preferredVoice = voices.find(voice => 
+                voice.lang.startsWith(voiceLang.split('-')[0])
+            );
+            if (preferredVoice) {
+                currentSpeech.voice = preferredVoice;
+            }
+            
+            // Set up event listeners
+            currentSpeech.onstart = () => {
+                isSpeaking = true;
+                isPaused = false;
+                button.classList.add('speaking');
+                button.innerHTML = '⏸️'; // Pause icon when speaking
+                console.log('Speech started');
+            };
+            
+            currentSpeech.onend = () => {
+                isSpeaking = false;
+                isPaused = false;
+                activeSpeechId = null;
+                resetAllSpeakingButtons();
+                currentSpeech = null;
+                console.log('Speech ended');
+            };
+            
+            currentSpeech.onerror = (event) => {
+                console.error('Speech error:', event.error);
+                isSpeaking = false;
+                isPaused = false;
+                activeSpeechId = null;
+                resetAllSpeakingButtons();
+                currentSpeech = null;
+                alert('Speech error: ' + event.error);
+            };
+            
+            // Start speaking
+            speechSynthesis.speak(currentSpeech);
+        }
+        
+        // Update speech rate when slider changes
+        function updateSpeechRate(translationId) {
+            if (currentSpeech && activeSpeechId === translationId && isSpeaking) {
+                const speedSlider = document.getElementById(`speedSlider_${translationId}`);
+                if (speedSlider && currentSpeech) {
+                    // Note: Cannot change rate of active speech, would need to restart
+                    console.log('Speech rate will change on next play:', speedSlider.value);
+                }
+            }
+        }
+        
+        // Update speech volume when slider changes
+        function updateSpeechVolume(translationId) {
+            if (currentSpeech && activeSpeechId === translationId && isSpeaking) {
+                const volumeSlider = document.getElementById(`volumeSlider_${translationId}`);
+                if (volumeSlider && currentSpeech) {
+                    // Note: Cannot change volume of active speech, would need to restart
+                    console.log('Speech volume will change on next play:', volumeSlider.value);
+                }
+            }
+        }
+        
+        // New expandable voice control functions
+        function toggleVoiceControls(translationId) {
+            const panel = document.getElementById(`voicePanel_${translationId}`);
+            const button = document.getElementById(`voiceBtn_${translationId}`);
+            
+            if (panel.style.display === 'none' || !panel.style.display) {
+                // Hide all other panels first
+                document.querySelectorAll('.voice-control-panel').forEach(p => {
+                    p.style.display = 'none';
+                });
+                
+                // Show this panel
+                panel.style.display = 'flex';
+                button.classList.add('active');
+            } else {
+                // Hide this panel
+                panel.style.display = 'none';
+                button.classList.remove('active');
+            }
+        }
+        
+        function startSpeech(text, languageCode, translationId) {
+            if (!text || text.trim() === '') {
+                alert('No text to speak');
+                return;
+            }
+            
+            // Check if speech synthesis is supported
+            if (!('speechSynthesis' in window)) {
+                alert('Text-to-speech is not supported in your browser');
+                return;
+            }
+            
+            // Stop any current speech
+            if (currentSpeech) {
+                speechSynthesis.cancel();
+                resetAllSpeakingButtons();
+            }
+            
+            const speedSlider = document.getElementById(`speedSlider_${translationId}`);
+            const volumeSlider = document.getElementById(`volumeSlider_${translationId}`);
+            const playButton = document.querySelector(`#voicePanel_${translationId} .play-button`);
+            const pauseButton = document.getElementById(`pauseBtn_${translationId}`);
+            
+            // Create new speech utterance
+            currentSpeech = new SpeechSynthesisUtterance(text);
+            activeSpeechId = translationId;
+            
+            // Set language
+            const voiceLang = voiceLanguageMap[languageCode] || 'en-US';
+            currentSpeech.lang = voiceLang;
+            
+            // Get values from sliders
+            const speed = speedSlider ? parseFloat(speedSlider.value) : 0.9;
+            const volume = volumeSlider ? parseFloat(volumeSlider.value) : 0.8;
+            
+            // Set voice properties from sliders
+            currentSpeech.rate = speed;
+            currentSpeech.pitch = 1.0;
+            currentSpeech.volume = volume;
+            
+            // Try to find a specific voice for the language
+            const voices = speechSynthesis.getVoices();
+            const preferredVoice = voices.find(voice => 
+                voice.lang.startsWith(voiceLang.split('-')[0])
+            );
+            if (preferredVoice) {
+                currentSpeech.voice = preferredVoice;
+            }
+            
+            // Set up event listeners
+            currentSpeech.onstart = () => {
+                isSpeaking = true;
+                isPaused = false;
+                playButton.style.display = 'none';
+                pauseButton.style.display = 'inline-flex';
+                console.log('Speech started');
+            };
+            
+            currentSpeech.onend = () => {
+                isSpeaking = false;
+                isPaused = false;
+                activeSpeechId = null;
+                playButton.style.display = 'inline-flex';
+                pauseButton.style.display = 'none';
+                currentSpeech = null;
+                console.log('Speech ended');
+            };
+            
+            currentSpeech.onerror = (event) => {
+                console.error('Speech error:', event.error);
+                isSpeaking = false;
+                isPaused = false;
+                activeSpeechId = null;
+                playButton.style.display = 'inline-flex';
+                pauseButton.style.display = 'none';
+                currentSpeech = null;
+                alert('Speech error: ' + event.error);
+            };
+            
+            // Start speaking
+            speechSynthesis.speak(currentSpeech);
+        }
+        
+        function pauseSpeech(translationId) {
+            if (currentSpeech && activeSpeechId === translationId && isSpeaking) {
+                const playButton = document.querySelector(`#voicePanel_${translationId} .play-button`);
+                const pauseButton = document.getElementById(`pauseBtn_${translationId}`);
+                
+                if (speechSynthesis.paused) {
+                    // Resume speech
+                    speechSynthesis.resume();
+                    isPaused = false;
+                    playButton.style.display = 'none';
+                    pauseButton.style.display = 'inline-flex';
+                    console.log('Speech resumed');
+                } else {
+                    // Pause speech
+                    speechSynthesis.pause();
+                    isPaused = true;
+                    playButton.style.display = 'inline-flex';
+                    pauseButton.style.display = 'none';
+                    console.log('Speech paused');
+                }
+            }
+        }
+        
+        function resetAllSpeakingButtons() {
+            document.querySelectorAll('.voice-button').forEach(btn => {
+                btn.classList.remove('speaking', 'paused', 'active');
+                btn.innerHTML = '🔊'; // Speaker icon when idle
+            });
+            
+            // Reset all control panels
+            document.querySelectorAll('.voice-control-panel').forEach(panel => {
+                panel.style.display = 'none';
+                const playButton = panel.querySelector('.play-button');
+                const pauseButton = panel.querySelector('.pause-button');
+                if (playButton) playButton.style.display = 'inline-flex';
+                if (pauseButton) pauseButton.style.display = 'none';
+            });
+        }
+        
+        function stopAllSpeech() {
+            if (currentSpeech) {
+                speechSynthesis.cancel();
+                isSpeaking = false;
+                isPaused = false;
+                activeSpeechId = null;
+                resetAllSpeakingButtons();
+                currentSpeech = null;
+                console.log('All speech stopped');
+            }
+        }
+        
+        // Load voices when available
+        function loadVoices() {
+            const voices = speechSynthesis.getVoices();
+            console.log('Available voices:', voices.length);
+            
+            // Log available languages for debugging
+            const availableLangs = [...new Set(voices.map(v => v.lang.split('-')[0]))];
+            console.log('Available voice languages:', availableLangs);
+        }
+        
+        // Load voices when they become available
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        loadVoices(); // Try to load immediately too
+        
+        // Auto-refresh files every 30 seconds
+        setInterval(() => {
+            if (document.getElementById('content').innerHTML.includes('files-grid')) {
+                loadFiles();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
