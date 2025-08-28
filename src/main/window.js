@@ -24,8 +24,8 @@ function createWindow() {
     title: 'Happy Files Viewer'
   });
 
-  // Load the test HTML file temporarily for debugging
-  mainWindow.loadFile(path.join(__dirname, '..', '..', 'test.html'));
+  // Load the HTML file
+  mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
   // Show window when ready to prevent visual flash
   mainWindow.once('ready-to-show', () => {
