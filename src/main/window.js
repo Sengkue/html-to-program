@@ -46,8 +46,10 @@ function createWindow() {
     mainWindow.webContents.send('window-unmaximized');
   });
 
-  // Open DevTools for debugging
-  mainWindow.webContents.openDevTools();
+  // Development only: Open DevTools
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools();
+  }
 
   return mainWindow;
 }
