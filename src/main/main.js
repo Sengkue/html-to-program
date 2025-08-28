@@ -95,6 +95,15 @@ app.on('web-contents-created', (event, contents) => {
 
 
 function setupTranslationHandlers() {
+  // Translate single text
+  ipcMain.handle('translate-single', async (event, { text, to, from }) => {
+    try {
+      console.log(`Translating "${text}" from ${from || 'auto'} to ${to}`);
+      const result = await translator.translate(text, to, from);
+      return result;
+    } catch (error) {
+      console.error('Single translation error:', error);
+      return { success: false, error: error.message, originalText: text };
     }
   });
 
